@@ -212,6 +212,26 @@ function Segmented({ label, options, value, onChange }) {
 
 /* ---------- Aplicación ---------- */
 function App() {
+  const [notificationPermission, setNotificationPermission] = useState(
+  typeof Notification !== 'undefined' ? Notification.permission : 'denied'
+)
+
+async function enableNotifications() {
+  if (!('Notification' in window)) {
+    alert('Tu navegador no admite notificaciones.')
+    return
+  }
+
+  const permission = await Notification.requestPermission()
+  setNotificationPermission(permission)
+
+  if (permission === 'granted') {
+    new Notification('AchitoApp', {
+      body: '¡Notificaciones activadas correctamente!',
+      icon: '/favicon.svg'
+    })
+  }
+}
   const [connected, setConnected] = useState(false)
   const [loaded, setLoaded] = useState(false)
   const [paused, setPaused] = useState(false)
@@ -249,8 +269,19 @@ function App() {
     setEvents(prev => [event, ...prev].slice(0, 200))
   }, [])
 
-  const notify = useCallback((text, tone) => setToast({ text, tone, id: Date.now() }), [])
+  const notify = useCallback((text, tone) => {
+  setToast({ text, tone, id: Date.now() })
 
+  if (
+    typeof Notification !== 'undefined' &&
+    Notification.permission === 'granted'
+  ) {
+    new Notification('AchitoApp', {
+      body: text,
+      icon: '/favicon.svg'
+    })
+  }
+}, [])
   /* Lectura periódica del ESP32 */
   useEffect(() => {
     if (paused) return undefined
@@ -697,7 +728,38 @@ function App() {
         )}
 
         {activeSection === 'Ajustes' && (
+           
           <div className="settings">
+            <section className="panel">
+  <div className="setting">
+    <div>
+      <h3>Notificaciones del sistema</h3>
+      <p>
+        Recibe alertas de AchitoApp cuando ocurran detecciones
+        o cambios en la conexión del ESP32.
+      </p>
+      <small>
+        Estado: {
+          notificationPermission === 'granted'
+            ? 'Activadas'
+            : notificationPermission === 'denied'
+              ? 'Bloqueadas en Chrome'
+              : 'Pendientes de autorización'
+        }
+      </small>
+    </div>
+
+    <button
+      className="icon-button"
+      onClick={enableNotifications}
+      disabled={notificationPermission === 'granted'}
+    >
+      {notificationPermission === 'granted'
+        ? 'Activadas'
+        : 'Activar notificaciones'}
+    </button>
+  </div>
+</section>
             <section className="panel">
               <div className="setting">
                 <div>
