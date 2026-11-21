@@ -246,9 +246,15 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   font-weight: 700;
   line-height: 1.1;
   letter-spacing: -0.02em;
+  color: var(--ink);
+  transition: color 0.3s ease;
 }
 
-.page-header p { color: var(--muted); margin-top: 8px; }
+.page-header p {
+  color: var(--muted);
+  margin-top: 8px;
+  transition: color 0.3s ease;
+}
 
 .header-actions {
   display: flex;
